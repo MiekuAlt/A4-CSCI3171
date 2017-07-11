@@ -5,7 +5,7 @@
    gcc server2.c -lsocket
 */
 
-// Just testing something!
+// Another Test!
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
