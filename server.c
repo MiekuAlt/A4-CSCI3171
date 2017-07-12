@@ -5,13 +5,16 @@
    gcc server2.c -lsocket
 */
 
-// Just testing something!
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <time.h>
+#include <stdlib.h>
+#include <strings.h>
+#include <string.h>
 
-void dostuff(int); /* function prototype */
+void playRound(int); /* function prototype */
 void error(char *msg)
 {
     perror(msg);
@@ -50,7 +53,7 @@ int main(int argc, char *argv[])
              error("ERROR on fork");
          if (pid == 0)  {
              close(sockfd);
-             dostuff(newsockfd);
+             playRound(newsockfd);
              exit(0);
          }
          else close(newsockfd);
@@ -58,20 +61,60 @@ int main(int argc, char *argv[])
      return 0; /* we never get here */
 }
 
-/******** DOSTUFF() *********************
- There is a separate instance of this function
- for each connection.  It handles all communication
- once a connnection has been established.
+/*************** playRound() **************
+ For each message from the client, playRound()
+ is called. This method receives the client's
+ choice of S (Silent) or B (Betray). It makes
+ a random choice as to what it will do. Then
+ it returns the result of the round to the
+ client.
  *****************************************/
-void dostuff (int sock)
+void playRound (int sock)
 {
    int n;
-   char buffer[256];
+   char PrisA[256];
 
-   bzero(buffer,256);
-   n = read(sock,buffer,255);
-   if (n < 0) error("ERROR reading from socket");
-   printf("Here is the message: %s\n",buffer);
-   n = write(sock,"I got your message",18);
+   // Server is reading what the client has submitted
+   bzero(PrisA,256);
+   n = read(sock,PrisA,255);
+
+   // Server is choosing what it will be
+   char* PrisB;
+   srand ( time(NULL) ); // seeding rand so it is not always the same :)
+   int i= rand() % 2;
+
+   if(i == 0) {
+     PrisB = "S";
+   } else {
+     PrisB = "B";
+   }
+   printf("Prisoner A Chose: %s", PrisA);
+   printf("Prisoner B Chose: %s\n", PrisB);
+
+   // Server is determining the number of years
+   char* answer;
+   if(strcmp(PrisA,"S\n") == 0) { // Prisoner A chose S
+     if(strcmp(PrisB,"S") == 0) { // Prisoner B chose S
+       answer = "Prisoner A: 1 year\nPrisoner B: 1 year\n";
+     } else { // Prisoner B chose B
+       answer = "Prisoner A: 3 years\nPrisoner B: You are Free!\n";
+     }
+   } else { // Prisoner A chose B
+     if(strcmp(PrisB,"S") == 0) { // Prisoner B chose S
+       answer = "Prisoner A: You are Free!\nPrisoner B: 3 years\n";
+     } else { // Prisoner B chose B
+       answer = "Prisoner A: 2 years\nPrisoner B: 2 years\n";
+     }
+   }
+
+   // Server is sending the results to the client
+   char* fancyHeader;
+   char* fancyFooter;
+   fancyHeader = "\n+=========================+\n+        Results!         +\n+=========================+\n";
+   fancyFooter = "+=========================+\n";
+
+   write(sock, fancyHeader, strlen(fancyHeader));
+   n = write(sock, answer, strlen(answer));
    if (n < 0) error("ERROR writing to socket");
+   write(sock, fancyFooter, strlen(fancyFooter));
 }
