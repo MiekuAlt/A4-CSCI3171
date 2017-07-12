@@ -43,21 +43,15 @@ int main(int argc, char *argv[])
               error("ERROR on binding");
      listen(sockfd,5);
      clilen = sizeof(cli_addr);
-     while (1) {
-         newsockfd = accept(sockfd,
+    
+     newsockfd = accept(sockfd,
                (struct sockaddr *) &cli_addr, &clilen);
-         if (newsockfd < 0)
-             error("ERROR on accept");
-         pid = fork();
-         if (pid < 0)
-             error("ERROR on fork");
-         if (pid == 0)  {
-             close(sockfd);
-             playRound(newsockfd);
-             exit(0);
-         }
-         else close(newsockfd);
-     } /* end of while */
+     if (newsockfd < 0){
+        error("ERROR on accept");
+		exit(0);
+     }
+     playRound(newsockfd);
+     close(newsockfd);
      return 0; /* we never get here */
 }
 
@@ -71,50 +65,76 @@ int main(int argc, char *argv[])
  *****************************************/
 void playRound (int sock)
 {
-   int n;
-   char PrisA[256];
+	while(1){
+	   int n;
+	   char PrisA[256];
 
-   // Server is reading what the client has submitted
-   bzero(PrisA,256);
-   n = read(sock,PrisA,255);
+	   // Server is reading what the client has submitted
+	   bzero(PrisA,256);
+	   n = read(sock,PrisA,255);
+	   
+	   /*printf("%d\n", n);*/
+	   
+	   if(n==0){
+		   printf("Exiting...\n");
+		   close(sock);
+		   exit(0);
+	   }
+	   else if (n<0){
+		   error("ERROR on read in playRound function");
+		   exit(0);
+	   }
 
-   // Server is choosing what it will be
-   char* PrisB;
-   srand ( time(NULL) ); // seeding rand so it is not always the same :)
-   int i= rand() % 2;
+	   //checking the client side type the right thing
+	   
+	   if (strlen(PrisA)!=2 || (PrisA[0]!='S' && PrisA[0]!='B')){
+		   char* check;
+		   check = "Invalid response.\n";
+		   write(sock, check, strlen(check));
+		   continue;
+		}
+		   
+	   
+	   
+	   // Server is choosing what it will be
+	   char* PrisB;
+	   srand ( time(NULL) ); // seeding rand so it is not always the same :)
+	   int i= rand() % 2;
 
-   if(i == 0) {
-     PrisB = "S";
-   } else {
-     PrisB = "B";
-   }
-   printf("Prisoner A Chose: %s", PrisA);
-   printf("Prisoner B Chose: %s\n", PrisB);
+	   if(i == 0) {
+		 PrisB = "S";
+	   } else {
+		 PrisB = "B";
+	   }
+	   printf("Prisoner A Chose: %s", PrisA);
+	   printf("Prisoner B Chose: %s\n", PrisB);
 
-   // Server is determining the number of years
-   char* answer;
-   if(strcmp(PrisA,"S\n") == 0) { // Prisoner A chose S
-     if(strcmp(PrisB,"S") == 0) { // Prisoner B chose S
-       answer = "Prisoner A: 1 year\nPrisoner B: 1 year\n";
-     } else { // Prisoner B chose B
-       answer = "Prisoner A: 3 years\nPrisoner B: You are Free!\n";
-     }
-   } else { // Prisoner A chose B
-     if(strcmp(PrisB,"S") == 0) { // Prisoner B chose S
-       answer = "Prisoner A: You are Free!\nPrisoner B: 3 years\n";
-     } else { // Prisoner B chose B
-       answer = "Prisoner A: 2 years\nPrisoner B: 2 years\n";
-     }
-   }
+	   // Server is determining the number of years
+	   char* answer;
+	   if(strcmp(PrisA,"S\n") == 0) { // Prisoner A chose S
+		 if(strcmp(PrisB,"S") == 0) { // Prisoner B chose S
+		   answer = "Prisoner A: 1 year\nPrisoner B: 1 year\n";
+		 } else { // Prisoner B chose B
+		   answer = "Prisoner A: 3 years\nPrisoner B: You are Free!\n";
+		 }
+	   } else { // Prisoner A chose B
+		 if(strcmp(PrisB,"S") == 0) { // Prisoner B chose S
+		   answer = "Prisoner A: You are Free!\nPrisoner B: 3 years\n";
+		 } else { // Prisoner B chose B
+		   answer = "Prisoner A: 2 years\nPrisoner B: 2 years\n";
+		 }
+	   }
 
-   // Server is sending the results to the client
-   char* fancyHeader;
-   char* fancyFooter;
-   fancyHeader = "\n+=========================+\n+        Results!         +\n+=========================+\n";
-   fancyFooter = "+=========================+\n";
+	   // Server is sending the results to the client
+	   char* fancyHeader;
+	   char* fancyFooter;
+	   fancyHeader = "\n+=========================+\n+        Results!         +\n+=========================+\n";
+	   fancyFooter = "+=========================+\n";
 
-   write(sock, fancyHeader, strlen(fancyHeader));
-   n = write(sock, answer, strlen(answer));
-   if (n < 0) error("ERROR writing to socket");
-   write(sock, fancyFooter, strlen(fancyFooter));
+	   write(sock, fancyHeader, strlen(fancyHeader));
+	   n = write(sock, answer, strlen(answer));
+	   if (n < 0) error("ERROR writing to socket");
+	   write(sock, fancyFooter, strlen(fancyFooter));
+	   
+	}
 }
