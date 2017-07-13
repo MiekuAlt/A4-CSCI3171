@@ -1,10 +1,11 @@
-/* A simple server in the internet domain using TCP
-   The port number is passed as an argument
-   This version runs forever, forking off a separate
-   process for each connection
-   gcc server2.c -lsocket
-*/
+/************************ server ************************
+By: Michael Altair & Chaoran Zhou
 
+This code is derived off of tutorial code provided by
+http://www.linuxhowtos.org/C_C++/socket.htm it was then
+modified in order to fulfill the requirements of this
+assignment.
+ ********************************************************/
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -43,7 +44,7 @@ int main(int argc, char *argv[])
               error("ERROR on binding");
      listen(sockfd,5);
      clilen = sizeof(cli_addr);
-    
+
      newsockfd = accept(sockfd,
                (struct sockaddr *) &cli_addr, &clilen);
      if (newsockfd < 0){
@@ -72,9 +73,7 @@ void playRound (int sock)
 	   // Server is reading what the client has submitted
 	   bzero(PrisA,256);
 	   n = read(sock,PrisA,255);
-	   
-	   /*printf("%d\n", n);*/
-	   
+
 	   if(n==0){
 		   printf("Exiting...\n");
 		   close(sock);
@@ -85,17 +84,14 @@ void playRound (int sock)
 		   exit(0);
 	   }
 
-	   //checking the client side type the right thing
-	   
-	   if (strlen(PrisA)!=2 || (PrisA[0]!='S' && PrisA[0]!='B')){
+	   // Checking if the correct response was provided
+	   if (strlen(PrisA)!=2 || (PrisA[0]!='S' && PrisA[0]!='B' && PrisA[0]!='s' && PrisA[0]!='b')){
 		   char* check;
-		   check = "Invalid response.\n";
+		   check = "Invalid response, please enter S or B.\n";
 		   write(sock, check, strlen(check));
 		   continue;
 		}
-		   
-	   
-	   
+
 	   // Server is choosing what it will be
 	   char* PrisB;
 	   srand ( time(NULL) ); // seeding rand so it is not always the same :)
@@ -111,18 +107,18 @@ void playRound (int sock)
 
 	   // Server is determining the number of years
 	   char* answer;
-	   if(strcmp(PrisA,"S\n") == 0) { // Prisoner A chose S
-		 if(strcmp(PrisB,"S") == 0) { // Prisoner B chose S
-		   answer = "Prisoner A: 1 year\nPrisoner B: 1 year\n";
-		 } else { // Prisoner B chose B
-		   answer = "Prisoner A: 3 years\nPrisoner B: You are Free!\n";
-		 }
+	   if(strcmp(PrisA,"S\n") == 0 || strcmp(PrisA,"s\n") == 0) { // Prisoner A chose S
+  		 if(strcmp(PrisB,"S") == 0) { // Prisoner B chose S
+  		   answer = "+    Prisoner A: 1 year   +\n+    Prisoner B: 1 year   +\n";
+  		 } else { // Prisoner B chose B
+  		   answer = "+   Prisoner A: 3 years   +\n+Prisoner B: You are Free!+\n";
+  		 }
 	   } else { // Prisoner A chose B
-		 if(strcmp(PrisB,"S") == 0) { // Prisoner B chose S
-		   answer = "Prisoner A: You are Free!\nPrisoner B: 3 years\n";
-		 } else { // Prisoner B chose B
-		   answer = "Prisoner A: 2 years\nPrisoner B: 2 years\n";
-		 }
+  		 if(strcmp(PrisB,"S") == 0) { // Prisoner B chose S
+  		   answer = "+Prisoner A: You are Free!+\n+   Prisoner B: 3 years   +\n";
+  		 } else { // Prisoner B chose B
+  		   answer = "+   Prisoner A: 2 years   +\n+   Prisoner B: 2 years   +\n";
+  		 }
 	   }
 
 	   // Server is sending the results to the client
@@ -135,6 +131,6 @@ void playRound (int sock)
 	   n = write(sock, answer, strlen(answer));
 	   if (n < 0) error("ERROR writing to socket");
 	   write(sock, fancyFooter, strlen(fancyFooter));
-	   
+
 	}
 }
