@@ -17,7 +17,12 @@ How to compile and start the client:
 
 gcc client.c -o client.out
 
+on a local:
 ./client.out localhost 8080
+(The same socket number you chose for the server)
+
+on a remote host:
+./client.out 19.16.12.10(the IP address of the client side) 8080
 (The same socket number you chose for the server)
 
 ************************************************
