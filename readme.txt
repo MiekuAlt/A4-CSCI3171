@@ -17,7 +17,7 @@ How to compile and start the client:
 
 gcc client.c -o client.out
 
-on a local:
+on a local host:
 ./client.out localhost 8080
 (The same socket number you chose for the server)
 
