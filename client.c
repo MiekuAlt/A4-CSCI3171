@@ -41,17 +41,46 @@ int main(int argc, char *argv[])
     serv_addr.sin_port = htons(portno);
     if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
         error("ERROR connecting");
-    printf("Please enter the message: ");
-    bzero(buffer,256);
-    fgets(buffer,255,stdin);
-    n = write(sockfd,buffer,strlen(buffer));
-    if (n < 0) 
-         error("ERROR writing to socket");
-    bzero(buffer,256);
-    n = read(sockfd,buffer,255);
-    if (n < 0) 
-         error("ERROR reading from socket");
-    printf("%s\n",buffer);
-    close(sockfd);
+	     while (1) {			
+			if (sockfd < 0) 
+				error("ERROR on accept");			
+			if (sockfd > 0)  {
+				/*close(sockfd);*/
+				dostuff(sockfd);
+				/*exit(0);*/
+			}
+			else close(sockfd);
+		} /* end of while; */
     return 0;
+}
+
+void dostuff (int sock)
+{
+   int n;
+   char buffer[256];
+   printf("Are you decide to remain Silent (S) or Betray (B)? "); 
+   bzero(buffer,256);
+   fgets(buffer,255,stdin);
+   n = write(sock,buffer,strlen(buffer));
+   if (n < 0) error("ERROR writing to socket");
+   bzero(buffer,256);
+   n = read(sock,buffer,255);  
+   if (n < 0) error("ERROR reading to socket");
+   printf("%s\n",buffer);
+   while(1){
+	   printf("Would you like to quit? Yes (Y) or No (N).\n");
+	   bzero(buffer,256);
+	   fgets(buffer,255,stdin);
+	   if (strlen(buffer)==2 ){
+		   if (buffer[0]=='Y')
+			   exit(0);
+		   if (buffer[0]=='N')
+			   break;
+		   else
+			   printf("Invalid response.\n");
+		   
+		}
+		else
+			printf("Invalid response.\n");
+	}
 }
