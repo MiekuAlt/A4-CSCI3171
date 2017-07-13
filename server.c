@@ -95,15 +95,15 @@ void playRound (int sock)
    char* answer;
    if(strcmp(PrisA,"S\n") == 0) { // Prisoner A chose S
      if(strcmp(PrisB,"S") == 0) { // Prisoner B chose S
-       answer = "Prisoner A: 1 year\nPrisoner B: 1 year\n";
+       answer = "+    Prisoner A: 1 year   +\n+    Prisoner B: 1 year   +\n";
      } else { // Prisoner B chose B
-       answer = "Prisoner A: 3 years\nPrisoner B: You are Free!\n";
+       answer = "+   Prisoner A: 3 years   +\n+Prisoner B: You are Free!+\n";
      }
    } else { // Prisoner A chose B
      if(strcmp(PrisB,"S") == 0) { // Prisoner B chose S
-       answer = "Prisoner A: You are Free!\nPrisoner B: 3 years\n";
+       answer = "+Prisoner A: You are Free!+\n+   Prisoner B: 3 years   +\n";
      } else { // Prisoner B chose B
-       answer = "Prisoner A: 2 years\nPrisoner B: 2 years\n";
+       answer = "+   Prisoner A: 2 years   +\n+   Prisoner B: 2 years   +\n";
      }
    }
 
