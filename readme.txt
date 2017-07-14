@@ -22,7 +22,7 @@ on a local host:
 (The same socket number you chose for the server)
 
 on a remote host:
-./client.out 19.16.12.10(the IP address of the client side) 8080
+./client.out (the IP address of the server side) 8080
 (The same socket number you chose for the server)
 
 ************************************************
